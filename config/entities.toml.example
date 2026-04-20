@@ -1,0 +1,44 @@
+# entities.toml.example — Entity alias configuration.
+#
+# Copy to config/entities.toml and edit for your project.
+# Aliases help the extractor recognize name variants as the same entity.
+#
+# The extractor loads this file at runtime. All names in the aliases list
+# are mapped to the canonical name during tagging.
+#
+# Run: python3 src/extract_facts.py --all  (picks up alias changes automatically)
+
+# ── People ────────────────────────────────────────────────────────────────────
+# [people.slug] — one block per person
+# canonical = "Display Name"
+# aliases   = ["Variant A", "Variant B", "Abbreviation"]
+
+[people.doe-john]
+canonical = "John Doe"
+aliases   = ["J. Doe", "Johnny Doe", "Mr. Doe"]
+
+[people.smith-jane]
+canonical = "Jane Smith"
+aliases   = ["J. Smith", "Smith", "Jane S."]
+
+# ── Places ────────────────────────────────────────────────────────────────────
+# [places.slug]
+# canonical = "Place Name"
+# aliases   = ["Variant", "Common abbreviation"]
+
+[places.new-york]
+canonical = "New York"
+aliases   = ["NYC", "New York City", "New York, NY", "Manhattan"]
+
+[places.washington-dc]
+canonical = "Washington DC"
+aliases   = ["Washington, D.C.", "D.C.", "the capital"]
+
+# ── Organizations ─────────────────────────────────────────────────────────────
+# [orgs.slug]
+# canonical = "Organization Name"
+# aliases   = ["Abbrev", "Former name", "Common shorthand"]
+
+[orgs.example-corp]
+canonical = "Example Corporation"
+aliases   = ["Example Corp", "ExCorp", "the company"]

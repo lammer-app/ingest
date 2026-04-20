@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>investigative-pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="project-name">investigative-pipeline</div>
+    <div class="project-tagline">
+      <span class="prompt-prefix">$ </span>source ingestion and fact extraction for long-form research<span class="cursor"></span>
+    </div>
+  </header>
+
+  <nav>
+    <a href="#what">what is this</a>
+    <a href="#how">how it works</a>
+    <a href="#start">getting started</a>
+    <a href="#formats">data formats</a>
+    <a href="#scripts">scripts</a>
+    <a href="#source">source</a>
+  </nav>
+
+  <!-- ── WHAT ────────────────────────────────────────────────────────────── -->
+
+  <section id="what">
+    <div class="section-header">
+      <span class="section-prompt">&gt;</span>
+      <span class="section-title">what is this</span>
+    </div>
+
+    <p>A Python pipeline for extracting, storing, and querying factual claims from long-form research sources — books, articles, depositions, transcripts, court documents. No database server, no external dependencies, no framework lock-in. Just files and stdlib.</p>
+
+    <p>Facts live in <code>facts.jsonl</code>, a flat JSONL file where every line is a structured claim with a date, certainty score, source citations, and entity tags. Once populated, the JSONL migrates to SQLite for richer querying — timelines, entity graphs, theme threads.</p>
+
+    <p>The extraction engine scores sentences from source documents against configurable indicators of factual density: dates, named entities, monetary figures, verifiable events. Low-scoring sentences are discarded. High-scoring ones become facts.</p>
+
+    <p>Built for investigative journalism and documentary research. Tested on a multi-year, 300+ source investigation. The schema is generic — bring your own sources, configure your own entities, define your own themes.</p>
+  </section>
+
+  <!-- ── HOW ─────────────────────────────────────────────────────────────── -->
+
+  <section id="how">
+    <div class="section-header">
+      <span class="section-prompt">&gt;</span>
+      <span class="section-title">how it works</span>
+    </div>
+
+    <div class="ascii-diagram"><pre>
+  books/              sources/              extracts/
+  *.md (EPUB→pandoc)  *.md (articles)       *.md (DOJ docs, transcripts)
+       │                    │                      │
+       └────────────────────┼──────────────────────┘
+                            ▼
+                  <span class="hl">extract_facts.py</span>
+                  sentence scoring
+                  entity tagging
+                  deduplication
+                            │
+                  ┌─────────┴──────────┐
+                  ▼                    ▼
+           <span class="hl">facts.jsonl</span>        <span class="hl">sources.jsonl</span>
+           media.jsonl        (build_registry.py)
+                  │
+                  ├── <span class="hl">validate.py</span>        cross-reference checks
+                  ├── <span class="hl">generate_views.py</span>  markdown views by year/entity/theme
+                  ├── <span class="hl">migrate_to_sqlite.py</span>
+                  │         │
+                  │   <span class="hl">evidence.db</span>        relational query layer
+                  │         │
+                  ├── <span class="hl">search_facts.py</span>    entity/tag/theme/AI queries
+                  └── <span class="hl">build_timeline.py</span>  chronological timeline.md
+</pre></div>
+
+    <p>The pipeline has two modes. During active research, facts live in JSONL — fast to append, easy to diff, human-readable. When the corpus stabilizes, <code>migrate_to_sqlite.py</code> loads the JSONL into a relational SQLite database with full entity and citation linking.</p>
+  </section>
+
+  <!-- ── GETTING STARTED ─────────────────────────────────────────────────── -->
+
+  <section id="start">
+    <div class="section-header">
+      <span class="section-prompt">&gt;</span>
+      <span class="section-title">getting started</span>
+    </div>
+
+    <p>Requirements: Python 3.11+ (uses stdlib <code>tomllib</code>). No pip installs needed.</p>
+
+<pre><span class="comment"># 1. Clone the repo</span>
+git clone https://github.com/luxwon/investigative-pipeline
+cd investigative-pipeline
+
+<span class="comment"># 2. Configure your project paths</span>
+cp config/project.toml.example .env
+<span class="comment"># Edit .env:</span>
+<span class="comment">#   PIPELINE_VAULT=/path/to/your/project</span>
+<span class="comment">#   PIPELINE_ARCHIVE=/path/to/your/data</span>
+source .env
+
+<span class="comment"># 3. Add your source configs</span>
+cp config/sources/example-source.toml config/sources/my-source.toml
+<span class="comment"># Edit my-source.toml with your book/article metadata</span>
+
+<span class="comment"># 4. Put a book in books/ (pandoc from EPUB recommended)</span>
+pandoc ~/Downloads/my-source.epub -t markdown -o books/my-source.md
+
+<span class="comment"># 5. Extract facts</span>
+python3 src/extract_facts.py books/my-source.md
+
+<span class="comment"># 6. Build source registry</span>
+python3 src/build_registry.py
+
+<span class="comment"># 7. Validate</span>
+python3 src/validate.py
+
+<span class="comment"># 8. Generate views</span>
+python3 src/generate_views.py
+
+<span class="comment"># 9. Migrate to SQLite (after corpus is stable)</span>
+python3 src/migrate_to_sqlite.py
+
+<span class="comment"># 10. Search</span>
+python3 src/search_facts.py "keyword query"
+python3 src/search_facts.py --person "Jane Smith" --year 2003
+python3 src/search_facts.py --certainty 8 --full</pre>
+
+    <p>Entity aliases go in <code>config/entities.toml</code> (copy from <code>entities.toml.example</code>). Source metadata goes in <code>config/sources/*.toml</code>, one file per source. The pipeline picks them up automatically on next run.</p>
+  </section>
+
+  <!-- ── DATA FORMATS ────────────────────────────────────────────────────── -->
+
+  <section id="formats">
+    <div class="section-header">
+      <span class="section-prompt">&gt;</span>
+      <span class="section-title">data formats</span>
+    </div>
+
+    <p>All fact data is stored as newline-delimited JSON (<code>.jsonl</code>). One object per line. Every line is a complete, independent record.</p>
+
+    <p><strong style="color: var(--green)">facts.jsonl</strong> — one fact per line:</p>
+
+<pre>{
+  <span class="string">"id"</span>:            <span class="string">"F-2005-0042"</span>,
+  <span class="string">"claim"</span>:         <span class="string">"John Doe transferred $3.2M to the Cayman entity on March 14, 2005."</span>,
+  <span class="string">"date"</span>:          { <span class="string">"value"</span>: <span class="string">"2005-03-14"</span>, <span class="string">"precision"</span>: <span class="string">"exact"</span> },
+  <span class="string">"certainty"</span>:     <span class="number">8</span>,
+  <span class="string">"status"</span>:        <span class="string">"confirmed"</span>,
+  <span class="string">"review_status"</span>: <span class="string">"reviewed"</span>,
+  <span class="string">"sources"</span>: [
+    { <span class="string">"source_id"</span>: <span class="string">"SRC-BOOK-smith-dark-money"</span>, <span class="string">"page"</span>: <span class="string">"142"</span> }
+  ],
+  <span class="string">"people"</span>:        [<span class="string">"John Doe"</span>],
+  <span class="string">"places"</span>:        [<span class="string">"Cayman Islands"</span>],
+  <span class="string">"organizations"</span>: [<span class="string">"Cayman Entity LLC"</span>],
+  <span class="string">"tags"</span>:          [<span class="string">"financial"</span>, <span class="string">"transfer"</span>],
+  <span class="string">"created"</span>:       <span class="string">"2025-01-15"</span>,
+  <span class="string">"modified"</span>:      <span class="string">"2025-01-15"</span>
+}</pre>
+
+    <p>Field reference:</p>
+
+    <div>
+      <div class="schema-field">
+        <span class="field-name">id</span>
+        <span class="field-desc">F-{YEAR}-{NNNN}. Year is the event date; NNNN is a zero-padded sequence.</span>
+      </div>
+      <div class="schema-field">
+        <span class="field-name">claim</span>
+        <span class="field-desc">A single, complete factual statement. Should be independently verifiable.</span>
+      </div>
+      <div class="schema-field">
+        <span class="field-name">date.value</span>
+        <span class="field-desc">ISO date string: YYYY-MM-DD, YYYY-MM, or YYYY.</span>
+      </div>
+      <div class="schema-field">
+        <span class="field-name">date.precision</span>
+        <span class="field-desc">exact | month | year | range | undated | approximate</span>
+      </div>
+      <div class="schema-field">
+        <span class="field-name">certainty</span>
+        <span class="field-desc">0–10. 8+ = court-documented. 5–7 = credible journalism. 1–4 = unverified/alleged.</span>
+      </div>
+      <div class="schema-field">
+        <span class="field-name">status</span>
+        <span class="field-desc">alleged | confirmed | disputed | disproven</span>
+      </div>
+      <div class="schema-field">
+        <span class="field-name">sources</span>
+        <span class="field-desc">Array of {source_id, page, quote}. source_id matches sources.jsonl.</span>
+      </div>
+      <div class="schema-field">
+        <span class="field-name">people / places / orgs</span>
+        <span class="field-desc">Entity arrays. Populated by alias resolution from config/entities.toml.</span>
+      </div>
+      <div class="schema-field">
+        <span class="field-name">tags</span>
+        <span class="field-desc">Free-form tags for topic clustering and theme association.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SCRIPTS ─────────────────────────────────────────────────────────── -->
+
+  <section id="scripts">
+    <div class="section-header">
+      <span class="section-prompt">&gt;</span>
+      <span class="section-title">scripts</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>script</th>
+          <th>purpose</th>
+          <th>cli example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>extract_facts.py</td>
+          <td>Score sentences, extract facts to JSONL</td>
+          <td><code>python3 src/extract_facts.py books/source.md</code></td>
+        </tr>
+        <tr>
+          <td>build_registry.py</td>
+          <td>Build sources.jsonl from TOML configs + discovery</td>
+          <td><code>python3 src/build_registry.py</code></td>
+        </tr>
+        <tr>
+          <td>validate.py</td>
+          <td>Schema validation + cross-reference checks</td>
+          <td><code>python3 src/validate.py --fix</code></td>
+        </tr>
+        <tr>
+          <td>generate_views.py</td>
+          <td>Markdown views by year / entity / theme / certainty</td>
+          <td><code>python3 src/generate_views.py</code></td>
+        </tr>
+        <tr>
+          <td>migrate_to_sqlite.py</td>
+          <td>Load JSONL into relational SQLite database</td>
+          <td><code>python3 src/migrate_to_sqlite.py --force</code></td>
+        </tr>
+        <tr>
+          <td>search_facts.py</td>
+          <td>Query evidence by entity, tag, theme, AI analysis</td>
+          <td><code>python3 src/search_facts.py --person "Jane" --year 2005</code></td>
+        </tr>
+        <tr>
+          <td>build_timeline.py</td>
+          <td>Generate chronological timeline.md from all sources</td>
+          <td><code>python3 src/build_timeline.py --full</code></td>
+        </tr>
+        <tr>
+          <td>project_paths.py</td>
+          <td>Path configuration — run to verify env setup</td>
+          <td><code>python3 src/project_paths.py</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>All scripts accept <code>--help</code>. All paths are configurable via <code>PIPELINE_VAULT</code> and <code>PIPELINE_ARCHIVE</code> environment variables.</p>
+  </section>
+
+  <!-- ── SOURCE ──────────────────────────────────────────────────────────── -->
+
+  <section id="source">
+    <div class="section-header">
+      <span class="section-prompt">&gt;</span>
+      <span class="section-title">source code</span>
+    </div>
+
+    <p>The repo is private. Key files are shown inline below. Fork and adapt freely.</p>
+
+    <p><strong style="color: var(--green)">src/project_paths.py</strong> — path resolution:</p>
+
+<pre><span class="comment"># Reads PIPELINE_VAULT and PIPELINE_ARCHIVE from environment
+# or from a .env file in the current working directory.</span>
+
+<span class="keyword">import</span> os
+<span class="keyword">from</span> pathlib <span class="keyword">import</span> Path
+
+<span class="keyword">def</span> _load_dotenv(path):
+    <span class="keyword">if not</span> path.exists(): <span class="keyword">return</span>
+    <span class="keyword">for</span> line <span class="keyword">in</span> path.read_text().splitlines():
+        line = line.strip()
+        <span class="keyword">if not</span> line <span class="keyword">or</span> line.startswith(<span class="string">"#"</span>) <span class="keyword">or</span> <span class="string">"="</span> <span class="keyword">not in</span> line: <span class="keyword">continue</span>
+        key, _, value = line.partition(<span class="string">"="</span>)
+        key = key.strip(); value = value.strip().strip(<span class="string">'"'</span>).strip(<span class="string">"'"</span>)
+        <span class="keyword">if</span> key <span class="keyword">and</span> key <span class="keyword">not in</span> os.environ: os.environ[key] = value
+
+_load_dotenv(Path.cwd() / <span class="string">".env"</span>)
+
+VAULT   = Path(os.environ.get(<span class="string">"PIPELINE_VAULT"</span>,   <span class="string">"."</span>)).expanduser().resolve()
+ARCHIVE = Path(os.environ.get(<span class="string">"PIPELINE_ARCHIVE"</span>, str(VAULT / <span class="string">"data"</span>))).expanduser().resolve()
+
+BOOKS_DIR    = VAULT / <span class="string">"books"</span>
+SOURCES_DIR  = VAULT / <span class="string">"sources"</span>
+FACTS_FILE   = ARCHIVE / <span class="string">"facts"</span> / <span class="string">"facts.jsonl"</span>
+SOURCES_FILE = ARCHIVE / <span class="string">"facts"</span> / <span class="string">"sources.jsonl"</span>
+EVIDENCE_DB  = VAULT / <span class="string">"db"</span> / <span class="string">"evidence.db"</span>
+SCHEMA_SQL   = VAULT / <span class="string">"db"</span> / <span class="string">"schema.sql"</span></pre>
+
+    <p><strong style="color: var(--green)">src/extract_facts.py</strong> — sentence scoring (key logic):</p>
+
+<pre><span class="comment"># Each sentence is scored against factual density indicators.
+# Sentences above score_threshold are extracted as fact candidates.</span>
+
+FACTUAL_INDICATORS = {
+    <span class="comment"># Temporal markers</span>
+    <span class="string">r'\b(19|20)\d{2}\b'</span>:                         3,
+    <span class="string">r'\b(January|February|March|…|December)\b'</span>:    2,
+    <span class="comment"># Numerical specificity</span>
+    <span class="string">r'\$[\d,]+(?:\.\d+)?(?:\s?(?:million|billion))?'</span>: 3,
+    <span class="string">r'\b\d{1,3}(?:,\d{3})+\b'</span>:                    2,
+    <span class="comment"># Action verbs</span>
+    <span class="string">r'\b(signed|filed|arrested|hired|paid|founded)\b'</span>: 2,
+    <span class="comment"># Attribution</span>
+    <span class="string">r'\b(according to|testified|told investigators)\b'</span>: 1,
+}
+
+<span class="keyword">def</span> score_sentence(sentence: str, source_bonus: int = 0) -> int:
+    score = source_bonus
+    <span class="keyword">for</span> pattern, weight <span class="keyword">in</span> FACTUAL_INDICATORS.items():
+        <span class="keyword">if</span> re.search(pattern, sentence, re.IGNORECASE):
+            score += weight
+    <span class="keyword">return</span> score</pre>
+
+    <p><strong style="color: var(--green)">db/schema.sql</strong> — SQLite evidence database (13 tables):</p>
+
+<pre><span class="comment">-- Core tables</span>
+source          <span class="comment">-- bibliographic records</span>
+evidence        <span class="comment">-- factual claims (with legacy_id linking back to JSONL)</span>
+citation        <span class="comment">-- evidence → source many-to-many</span>
+entity          <span class="comment">-- people, places, organizations</span>
+evidence_entity <span class="comment">-- evidence → entity links</span>
+thread          <span class="comment">-- interpretive themes / narrative threads</span>
+evidence_thread <span class="comment">-- evidence → thread links</span>
+packet          <span class="comment">-- curated research collections</span>
+packet_evidence <span class="comment">-- packet → evidence links</span>
+evidence_tag    <span class="comment">-- free-form tags</span>
+media           <span class="comment">-- images, video, audio, documents</span>
+media_segment   <span class="comment">-- timestamped segments within audio/video</span>
+citation_media  <span class="comment">-- citation → media links</span></pre>
+
+  </section>
+
+  <footer>
+    <p>investigative-pipeline &mdash; private repo, open schema &mdash; by <a href="https://lammer.app" style="color: var(--green-dim); text-decoration: none;">lammer.app</a></p>
+  </footer>
+
+</div>
+</body>
+</html>

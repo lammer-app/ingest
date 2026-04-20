@@ -1,0 +1,49 @@
+# example-source.toml — Template for a single source entry.
+#
+# Create one file per source in config/sources/. The filename (without .toml)
+# becomes the slug used to match against books/ and sources/ directories.
+#
+# Example slugs:
+#   config/sources/smith-dark-money.toml  → books/smith-dark-money.md
+#   config/sources/nyt-2019-article.toml  → sources/nyt-2019-article.md
+#
+# Run `python3 src/build_registry.py` to regenerate sources.jsonl after
+# adding or editing source configs.
+
+[source]
+# Unique identifier for this source. Convention: SRC-{TYPE}-{slug}
+# Types: BOOK, ART (article), DOC (document), DEPO (deposition), TRANS (transcript)
+id             = "SRC-BOOK-author-slug"
+
+# Short reference string used in citations (author, title, year)
+ref            = "Smith, Dark Money (2016)"
+
+# Source type: book | article | document | deposition | transcript | podcast
+type           = "book"
+
+# Full title
+title          = "Dark Money: The Hidden History of the Billionaires Behind the Rise of the Radical Right"
+
+# Author(s)
+author         = "Jane Mayer"
+
+# Publication year
+year           = 2016
+
+# Base certainty score for facts extracted from this source (0–10).
+# Memoirs and first-person accounts often warrant a slightly lower base (6–7)
+# because they reflect the author's perspective.
+# Court documents and official records can go higher (8–9).
+certainty_base = 7
+
+# Set to true if this is a memoir or first-person account.
+# Used to flag facts as potentially self-serving.
+is_memoir      = false
+
+# Optional: override the global score_threshold for this specific source.
+# Useful for sources with dense, high-value prose (lower threshold)
+# or sources with lots of noise (higher threshold).
+# score_threshold = 4
+
+# Optional notes about this source (reliability, coverage, gaps)
+notes          = ""

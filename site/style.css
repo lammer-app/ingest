@@ -1,0 +1,278 @@
+/* investigative-pipeline — terminal theme */
+
+:root {
+  --bg:        #0f0f0f;
+  --bg2:       #1a1a1a;
+  --green:     #c8ff00;
+  --green-dim: #7a9900;
+  --text:      #e0e0e0;
+  --text-dim:  #888;
+  --border:    #333;
+  --max-w:     860px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.75;
+  padding: 0 20px 80px;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+.container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+header {
+  padding: 60px 0 40px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+
+.project-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: -0.5px;
+}
+
+.project-tagline {
+  color: var(--text-dim);
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.prompt-prefix {
+  color: var(--green);
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────────── */
+
+nav {
+  margin-bottom: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+}
+
+nav a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.15s;
+}
+
+nav a:hover,
+nav a:focus {
+  color: var(--green);
+  outline: none;
+}
+
+nav a::before {
+  content: '> ';
+  color: var(--green-dim);
+}
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+
+section {
+  margin-bottom: 64px;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.section-prompt {
+  color: var(--green);
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.section-title {
+  color: var(--green);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* ── Body text ───────────────────────────────────────────────────────────── */
+
+p {
+  color: var(--text);
+  margin-bottom: 16px;
+  max-width: 680px;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Code blocks ─────────────────────────────────────────────────────────── */
+
+pre {
+  background: var(--bg2);
+  border-left: 3px solid var(--green);
+  padding: 20px 24px;
+  overflow-x: auto;
+  margin: 20px 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+code {
+  font-family: inherit;
+  color: var(--text);
+}
+
+.comment { color: var(--text-dim); }
+.keyword { color: var(--green); }
+.string  { color: #a8d8a8; }
+
+/* Inline code */
+p code, li code {
+  background: var(--bg2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--green);
+}
+
+/* ── ASCII diagram ───────────────────────────────────────────────────────── */
+
+.ascii-diagram {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 24px;
+  font-size: 13px;
+  color: var(--text-dim);
+  overflow-x: auto;
+  margin: 20px 0;
+}
+
+.ascii-diagram .hl {
+  color: var(--green);
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 20px 0;
+}
+
+th {
+  text-align: left;
+  color: var(--green);
+  border-bottom: 1px solid var(--green-dim);
+  padding: 8px 12px 8px 0;
+  font-weight: 700;
+}
+
+td {
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+
+td:first-child {
+  color: var(--green);
+  white-space: nowrap;
+}
+
+/* ── Lists ───────────────────────────────────────────────────────────────── */
+
+ul, ol {
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+
+li {
+  margin-bottom: 6px;
+}
+
+li::marker {
+  color: var(--green-dim);
+}
+
+/* ── Schema block ────────────────────────────────────────────────────────── */
+
+.schema-field {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 4px 16px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.schema-field:last-child {
+  border-bottom: none;
+}
+
+.field-name {
+  color: var(--green);
+}
+
+.field-desc {
+  color: var(--text-dim);
+}
+
+/* ── Cursor blink ────────────────────────────────────────────────────────── */
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background: var(--green);
+  animation: blink 1.2s step-end infinite;
+  vertical-align: -3px;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+
+footer {
+  border-top: 1px solid var(--border);
+  padding-top: 32px;
+  margin-top: 80px;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  body { font-size: 13px; }
+  .project-name { font-size: 20px; }
+  pre { padding: 14px 16px; }
+  .schema-field { grid-template-columns: 1fr; }
+}

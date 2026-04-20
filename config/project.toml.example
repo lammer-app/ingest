@@ -1,0 +1,37 @@
+# project.toml.example — Copy to .env or export as shell variables
+#
+# The pipeline reads configuration from environment variables (or a .env file
+# in the working directory). See src/project_paths.py for details.
+#
+# Usage:
+#   cp config/project.toml.example .env
+#   # Edit .env with your paths
+#   source .env && python3 src/extract_facts.py books/my-source.md
+
+[paths]
+# Root of your project directory. Contains books/, sources/, config/, db/, etc.
+vault   = "/path/to/your/project"
+
+# Where facts, sources, and media JSONL files are stored.
+# Defaults to vault/data if not set — useful for keeping bulk data outside the repo.
+archive = "/path/to/your/data"
+
+[extraction]
+# Default certainty score (0–10) for extracted facts when no source-specific
+# value is set in the source's TOML config.
+default_certainty  = 7
+
+# Minimum scoring threshold to include a sentence as a fact candidate.
+# Higher = more conservative (fewer, higher-quality facts).
+# Lower = more permissive (more facts, more noise).
+score_threshold    = 5
+
+# Minimum word count for a sentence to be considered for extraction.
+min_sentence_words = 8
+
+[ids]
+# Prefix characters used when generating IDs for extracted facts and sources.
+# Customize per project (e.g. "E" for Epstein, "J" for a JFK project).
+fact_prefix   = "F"
+source_prefix = "SRC"
+media_prefix  = "M"
