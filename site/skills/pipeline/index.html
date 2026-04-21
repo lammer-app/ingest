@@ -39,7 +39,7 @@
       </nav>
 
       <h1 class="skill-title">investigative-pipeline</h1>
-      <p class="skill-subtitle">Sentence-scoring extraction pipeline for long-form document research</p>
+      <p class="skill-subtitle">Build a queryable facts database from research documents, books, and media — for use with Claude Code</p>
 
       <div class="install-block">
         <div class="install-label">Install</div>
@@ -50,7 +50,7 @@
       </div>
 
       <div class="summary-box">
-        <p class="summary-intro">Python scripts for extracting, storing, and querying facts from books, articles, depositions, and transcripts. JSONL during active research; SQLite for relational queries when the corpus is stable.</p>
+        <p class="summary-intro">Scripts for building and querying a facts database from research documents, books, and media — designed for use with Claude Code in long-form investigative research.</p>
         <ul>
           <li>No external dependencies — Python 3.11+ stdlib only</li>
           <li>Everything is plain files you can grep, diff, and edit</li>
@@ -62,8 +62,8 @@
       <!-- ── OVERVIEW ─────────────────────────────────────────────── -->
       <section class="prose-section">
         <h2 class="section-heading">Overview</h2>
-        <p>A Python extraction engine for long-form document research. Takes books, articles, depositions, and transcripts in markdown format, scores sentences for factual density, and accumulates results into a searchable JSONL store with timeline and SQLite query tools on top.</p>
-        <p>Useful for investigative journalism, academic research, legal discovery work, or any project where evidence accumulates across many sources and cross-referencing named entities across the full corpus matters.</p>
+        <p>An extraction and query layer for long-form investigative research, designed to work alongside Claude Code. Point it at a source — book, article, deposition, transcript, or audio file — and it scores sentences for factual density, extracts keepers into a JSONL facts store, and gives you search, timeline, and SQLite query tools on top. Ingestion scripts for EPUB, PDF, Kindle, web articles, YouTube, and audio are included.</p>
+        <p>Useful for investigative journalism, academic research, legal discovery, or any project where evidence accumulates across many sources and cross-referencing entities across the full corpus matters. Claude Code can query the database directly to answer research questions, surface connections, and generate annotated drafts from verified facts.</p>
         <p>Scales from one document to thousands — same workflow either way. Set <code>PIPELINE_VAULT</code> and <code>PIPELINE_ARCHIVE</code>, add a TOML per source, run <code>extract_facts.py</code>, search with <code>search_facts.py</code>.</p>
       </section>
 
