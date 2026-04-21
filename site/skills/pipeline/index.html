@@ -39,7 +39,7 @@
       </nav>
 
       <h1 class="skill-title">investigative-pipeline</h1>
-      <p class="skill-subtitle">Turn research documents into a queryable evidence database</p>
+      <p class="skill-subtitle">Sentence-scoring extraction pipeline for long-form document research</p>
 
       <div class="install-block">
         <div class="install-label">Install</div>
@@ -50,7 +50,7 @@
       </div>
 
       <div class="summary-box">
-        <p class="summary-intro">A Python toolkit for turning books, articles, depositions, and transcripts into a searchable evidence database — with search, timeline, and SQLite query tools on top.</p>
+        <p class="summary-intro">Python scripts for extracting, storing, and querying facts from books, articles, depositions, and transcripts. JSONL during active research; SQLite for relational queries when the corpus is stable.</p>
         <ul>
           <li>No external dependencies — Python 3.11+ stdlib only</li>
           <li>Everything is plain files you can grep, diff, and edit</li>
@@ -62,9 +62,9 @@
       <!-- ── OVERVIEW ─────────────────────────────────────────────── -->
       <section class="prose-section">
         <h2 class="section-heading">Overview</h2>
-        <p>You're deep in a research project with dozens of books, hundreds of articles, and scattered transcripts. You want to find every claim about a specific person across all sources, build a chronological timeline, and surface connections between entities.</p>
-        <p>This does that. Point it at a markdown file, it scores sentences for factual density, extracts the keepers into JSONL, and gives you search, timeline, and SQLite query tools on top.</p>
-        <p>The pipeline accumulates across sources — 1 document or 1,000, same workflow. Set <code>PIPELINE_VAULT</code> and <code>PIPELINE_ARCHIVE</code>, add a source TOML per document, run <code>extract_facts.py</code>, search with <code>search_facts.py</code>.</p>
+        <p>A Python extraction engine for long-form document research. Takes books, articles, depositions, and transcripts in markdown format, scores sentences for factual density, and accumulates results into a searchable JSONL store with timeline and SQLite query tools on top.</p>
+        <p>Useful for investigative journalism, academic research, legal discovery work, or any project where evidence accumulates across many sources and cross-referencing named entities across the full corpus matters.</p>
+        <p>Scales from one document to thousands — same workflow either way. Set <code>PIPELINE_VAULT</code> and <code>PIPELINE_ARCHIVE</code>, add a TOML per source, run <code>extract_facts.py</code>, search with <code>search_facts.py</code>.</p>
       </section>
 
       <!-- ── GETTING STARTED ──────────────────────────────────────── -->
