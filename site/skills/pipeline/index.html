@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/skills/pipeline/style.css">
 </head>
 <body>
 <div class="container">
@@ -23,6 +23,7 @@
   <nav>
     <a href="#what">what is this</a>
     <a href="#start">getting started</a>
+    <a href="#ingest">ingestion</a>
     <a href="#how">how it works</a>
     <a href="#scripts">scripts</a>
     <a href="#faq">faq</a>
@@ -172,6 +173,174 @@ python3 src/search_facts.py --person "David Koch" --json &gt; david-koch.json</p
 <span class="comment"># Build a chronological timeline</span>
 python3 src/build_timeline.py --full
 <span class="comment"># → timeline.md written</span></pre>
+  </section>
+
+  <!-- ── INGESTION ────────────────────────────────────────────────────────── -->
+
+  <section id="ingest">
+    <div class="section-header">
+      <span class="section-prompt">&gt;</span>
+      <span class="section-title">ingestion pathways</span>
+    </div>
+
+    <p>The extractor reads plain markdown. Your job is to get your source into a <code>.md</code> file first. Here's how to do that for every source type you're likely to encounter.</p>
+
+    <p><strong style="color: var(--green)">EPUB → markdown (best quality)</strong></p>
+    <p>Use this whenever an EPUB is available. Pandoc extracts structured text — typically 2–10x more content than a PDF scan.</p>
+<pre>pandoc ~/Downloads/book.epub -t markdown -o $PIPELINE_VAULT/books/book.md
+
+<span class="comment"># If pandoc fails with "parseSpine" error, the EPUB uses raw HTML files.</span>
+<span class="comment"># Unzip the EPUB and convert the HTML chapter files instead:</span>
+unzip book.epub -d /tmp/book_extracted/
+<span class="comment"># Find the HTML content (usually OEBPS/ or OPS/)</span>
+ls /tmp/book_extracted/OEBPS/
+cat /tmp/book_extracted/OEBPS/chapter*.html &gt; /tmp/book_combined.html
+pandoc /tmp/book_combined.html -t markdown -o $PIPELINE_VAULT/books/book.md
+
+<span class="comment"># If that produced "--- Page N ---\n" artifacts, strip them:</span>
+python3 -c "
+import re, sys
+t = open(sys.argv[1]).read()
+t = re.sub(r'--- Page \d+ ---\n', '', t)
+open(sys.argv[1], 'w').write(t)
+" $PIPELINE_VAULT/books/book.md</pre>
+
+    <p><strong style="color: var(--green)">PDF (text-based) → markdown</strong></p>
+    <p>Works when the PDF has a real text layer — you can select and copy text in a viewer. Falls back to garbage characters on scanned PDFs.</p>
+<pre><span class="comment"># pdftotext is part of poppler-utils (brew install poppler)</span>
+pdftotext -layout source.pdf $PIPELINE_VAULT/books/source.md
+
+<span class="comment"># Alternative using pandoc (less reliable for PDFs, but worth trying):</span>
+pandoc source.pdf -t markdown -o $PIPELINE_VAULT/books/source.md
+
+<span class="comment"># Check the output — if it's full of garbage characters, it's a scanned PDF.</span>
+head -50 $PIPELINE_VAULT/books/source.md</pre>
+
+    <p><strong style="color: var(--green)">PDF (scanned / image-only) → markdown</strong></p>
+    <p>Scanned PDFs are images with no text layer. You need OCR. Tesseract is free and good enough for print-quality scans.</p>
+<pre><span class="comment"># brew install tesseract (macOS)</span>
+<span class="comment"># apt install tesseract-ocr (Linux)</span>
+
+<span class="comment"># Single-file OCR (outputs source.txt):</span>
+tesseract source.pdf source txt
+
+<span class="comment"># Multi-page PDFs — convert pages to images first:</span>
+pdftoppm -r 300 source.pdf /tmp/source_pages/page
+tesseract /tmp/source_pages/page-001.ppm /tmp/out-001 txt
+<span class="comment"># ... repeat per page, then concat:</span>
+cat /tmp/out-*.txt &gt; $PIPELINE_VAULT/sources/source.md
+
+<span class="comment"># For high-volume OCR, Google Cloud Vision or AWS Textract produce better results</span>
+<span class="comment"># on degraded documents. Tesseract is fine for clean print scans.</span></pre>
+
+    <p><strong style="color: var(--green)">Kindle book → markdown</strong></p>
+    <p>Kindle books can't be downloaded as EPUB. The <a href="https://github.com/transitive-bullshit/kindle-ai-export" style="color: var(--green-dim)">kindle-ai-export</a> tool uses Playwright to screenshot Kindle Web Reader pages and extract text via GPT-4 vision.</p>
+<pre><span class="comment"># Install kindle-ai-export</span>
+git clone https://github.com/transitive-bullshit/kindle-ai-export
+cd kindle-ai-export && npm install
+
+<span class="comment"># Log into Kindle Web Reader first (reads.amazon.com/kindle-library)</span>
+<span class="comment"># Find your ASIN — the B0... code in the book URL on Amazon</span>
+
+npx kindle-ai-export --asin B09XXXXXXXX --output /tmp/book.md
+
+<span class="comment"># Known issues:</span>
+<span class="comment"># - Playwright may time out on slow connections — retry with --timeout 60000</span>
+<span class="comment"># - Output quality varies by book layout; dense footnote pages OCR poorly</span>
+<span class="comment"># - Amazon occasionally changes the Kindle reader DOM; check GitHub issues</span>
+<span class="comment"># - Session cookies expire; re-login to reads.amazon.com and re-run</span>
+
+cp /tmp/book.md $PIPELINE_VAULT/books/book.md</pre>
+
+    <p><strong style="color: var(--green)">Web article / webpage → markdown</strong></p>
+    <p>For paywalled articles, use your browser to copy the full text. For open-access pages, pandoc fetches and converts in one step.</p>
+<pre><span class="comment"># Open-access pages — pandoc fetches directly:</span>
+pandoc "https://example.com/article" -t markdown \
+  -o $PIPELINE_VAULT/sources/article-slug.md
+
+<span class="comment"># If the site blocks pandoc's user agent, use curl + pandoc:</span>
+curl -sL -A "Mozilla/5.0" "https://example.com/article" | \
+  pandoc -f html -t markdown -o $PIPELINE_VAULT/sources/article-slug.md
+
+<span class="comment"># Paywalled / JS-rendered pages:</span>
+<span class="comment"># Use your browser's reader mode, select all, paste into a .md file.</span>
+<span class="comment"># Or use a service like archive.ph or 12ft.io to bypass soft paywalls,</span>
+<span class="comment"># then fetch the archived URL with curl + pandoc.</span>
+
+<span class="comment"># Set the source type to "article" in the TOML:</span>
+<span class="comment"># type = "article"</span>
+<span class="comment"># Article files go in sources/, not books/</span></pre>
+
+    <p><strong style="color: var(--green)">YouTube video → markdown</strong></p>
+    <p>For videos with auto-generated or manual captions. No AI transcription needed — YouTube already has the text.</p>
+<pre><span class="comment"># Install yt-dlp (brew install yt-dlp)</span>
+
+<span class="comment"># Download the subtitle/transcript track as VTT:</span>
+yt-dlp --write-auto-sub --sub-lang en --skip-download \
+  --output "/tmp/%(title)s" "https://youtube.com/watch?v=XXXXXXXXXXX"
+
+<span class="comment"># Convert the VTT to plain text (strips timecodes and duplicates):</span>
+python3 -c "
+import re, sys
+lines = open(sys.argv[1]).readlines()
+seen = set()
+out = []
+for line in lines:
+    line = line.strip()
+    if '-->' in line or not line or line.startswith('WEBVTT'): continue
+    line = re.sub(r'&lt;[^&gt;]+&gt;', '', line)  # strip VTT tags
+    if line and line not in seen:
+        seen.add(line)
+        out.append(line)
+print('\n'.join(out))
+" /tmp/video.en.vtt &gt; $PIPELINE_VAULT/sources/video-title.md
+
+<span class="comment"># Alternative: youtube-transcript-api (pip install youtube-transcript-api)</span>
+python3 -c "
+from youtube_transcript_api import YouTubeTranscriptApi
+t = YouTubeTranscriptApi.get_transcript('VIDEO_ID')
+text = '\n'.join([x['text'] for x in t])
+open('/tmp/transcript.md', 'w').write(text)
+"
+
+<span class="comment"># Set type = "transcript" in the source TOML.</span></pre>
+
+    <p><strong style="color: var(--green)">Audio / podcast / deposition → markdown</strong></p>
+    <p>For audio-only sources — depositions, interviews, podcast episodes, court recordings. Two options: Whisper (local, free, good) or AssemblyAI (API, faster, diarization support).</p>
+<pre><span class="comment"># Option A: OpenAI Whisper (local, no API key needed)</span>
+<span class="comment"># pip install openai-whisper</span>
+<span class="comment"># brew install ffmpeg</span>
+
+whisper audio.mp3 --model medium --output_format txt --output_dir /tmp/
+cp /tmp/audio.txt $PIPELINE_VAULT/extracts/deposition-name.md
+
+<span class="comment"># Larger models are more accurate: tiny / base / small / medium / large</span>
+<span class="comment"># medium is a good balance of speed and accuracy for spoken testimony</span>
+
+<span class="comment"># Option B: AssemblyAI (API key required — assemblyai.com, free tier available)</span>
+<span class="comment"># pip install assemblyai</span>
+
+python3 &lt;&lt; 'EOF'
+import assemblyai as aai
+aai.settings.api_key = "YOUR_ASSEMBLYAI_KEY"
+config = aai.TranscriptionConfig(speaker_labels=True)
+transcript = aai.Transcriber().transcribe("audio.mp3", config=config)
+with open("$PIPELINE_VAULT/extracts/deposition-name.md", "w") as f:
+    for utt in transcript.utterances:
+        f.write(f"[Speaker {utt.speaker}] {utt.text}\n\n")
+EOF
+
+<span class="comment"># AssemblyAI advantages: speaker diarization (labels who said what),</span>
+<span class="comment"># faster on long files, auto-punctuation, higher accuracy on legal speech.</span>
+
+<span class="comment"># Set type = "deposition" or "transcript" in the source TOML.</span>
+<span class="comment"># Deposition files go in extracts/ not books/ or sources/</span></pre>
+
+    <p><strong style="color: var(--green)">Already have a text/markdown file?</strong></p>
+<pre><span class="comment"># If the source is already plain text or markdown, just copy it in:</span>
+cp my-document.txt $PIPELINE_VAULT/sources/document-name.md
+<span class="comment"># Then add a TOML and run extraction normally.</span></pre>
+
   </section>
 
   <!-- ── HOW ─────────────────────────────────────────────────────────────── -->
