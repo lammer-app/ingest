@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fira+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/skills/style.css?v=3">
+  <link rel="stylesheet" href="/skills/style.css?v=4">
   <meta property="og:title" content="research-ingest">
   <meta property="og:description" content="Unified investigative research pipeline. Ingest articles, books, depositions, and media. Track themes across sources. Query in plain English.">
   <meta property="og:image" content="https://lammer.app/og.png">
@@ -45,7 +45,7 @@
       <p class="skill-subtitle">Unified investigative research pipeline. Ingest articles, books, depositions, and media. Track themes across sources. Query in plain English.</p>
 
       <div class="install-block">
-        <div class="install-label">Install</div>
+        <div class="install-label">Add to Claude Code</div>
         <div class="install-cmd">
           <span class="install-prompt">$</span>
           <code>cp research-ingest.md .claude/commands/</code>
@@ -57,10 +57,10 @@
       </div>
 
       <div class="summary-box">
-        <p class="summary-intro">A single Claude Code command that handles the full investigative research pipeline — from raw source acquisition through structured fact extraction, database accumulation, and theme tracking. Point it at any source and it builds a queryable facts database you can research against.</p>
+        <p class="summary-intro">A Claude Code skill that handles the full investigative research pipeline — from raw source acquisition through structured fact extraction, database accumulation, and theme tracking. Point it at any URL or file and it builds a queryable facts database you can research against.</p>
         <ul>
-          <li>Seven subsystems: <code>article</code>, <code>doc</code>, <code>book</code>, <code>media</code>, <code>extract</code>, <code>theme</code>, <code>report</code></li>
-          <li>Article ingestion with 8-strategy paywall bypass cascade</li>
+          <li>Auto-detects source type from URL or file extension — no prefix needed for articles, books, or media</li>
+          <li>Article ingestion with multi-strategy paywall bypass</li>
           <li>Multi-agent book extraction: Haiku×4 specialists + Sonnet×2 synthesizers per chunk</li>
           <li>Theme tracking — investigative threads that accumulate evidence across sources</li>
           <li>Project-agnostic: configure any investigation via <code>--project</code> flag</li>
@@ -71,7 +71,7 @@
       <!-- ── SUBSYSTEMS ─────────────────────────────────────────────── -->
       <section class="prose-section">
         <h2 class="section-heading">Subsystems</h2>
-        <p>All commands route through a single entry point:</p>
+        <p>Pass any URL or file path. Claude detects the source type automatically and routes to the right pipeline.</p>
 
         <table class="data-table">
           <thead>
@@ -82,31 +82,31 @@
           </thead>
           <tbody>
             <tr>
-              <td><code>/research-ingest article &lt;url&gt;</code></td>
-              <td>Paywall bypass cascade → structured source file</td>
+              <td><code>ingest &lt;url&gt;</code></td>
+              <td>Web article, auto-detected</td>
             </tr>
             <tr>
-              <td><code>/research-ingest doc &lt;path&gt;</code></td>
-              <td>PDF / court document ingestion</td>
+              <td><code>ingest &lt;path&gt;</code></td>
+              <td>Book (EPUB/PDF), auto-detected</td>
             </tr>
             <tr>
-              <td><code>/research-ingest book &lt;path&gt;</code></td>
-              <td>EPUB/PDF → multi-agent extraction (Haiku×4 + Sonnet×2)</td>
+              <td><code>ingest &lt;url&gt;</code></td>
+              <td>YouTube / audio, auto-detected</td>
             </tr>
             <tr>
-              <td><code>/research-ingest media &lt;url&gt;</code></td>
-              <td>YouTube / audio → diarized transcript + facts (transcript via <code>yt-dlp</code> or <code>youtube_transcript_api</code>)</td>
+              <td><code>ingest doc &lt;path&gt;</code></td>
+              <td>Court docs / PDFs (use 'doc' for explicit)</td>
             </tr>
             <tr>
-              <td><code>/research-ingest extract &lt;source&gt;</code></td>
+              <td><code>ingest extract &lt;source&gt;</code></td>
               <td>Run multi-agent extraction on a saved source file</td>
             </tr>
             <tr>
-              <td><code>/research-ingest theme &lt;action&gt;</code></td>
+              <td><code>ingest theme &lt;action&gt;</code></td>
               <td>Define, tag, suggest, and report on investigative themes</td>
             </tr>
             <tr>
-              <td><code>/research-ingest report</code></td>
+              <td><code>ingest report</code></td>
               <td>Project status + per-theme evidence summaries</td>
             </tr>
           </tbody>
@@ -116,27 +116,10 @@
       <!-- ── ARTICLE EXAMPLE ─────────────────────────────────────────── -->
       <section class="prose-section">
         <h2 class="section-heading">Article ingestion</h2>
-        <p>The <code>article</code> subsystem tries eight access strategies in order, stops when it gets full text, and saves a structured source file with extracted facts.</p>
+        <p>Tries multiple access strategies automatically — direct fetch, archived copies, syndication — and stops when it gets full text.</p>
 
         <h3 class="subsection-heading">You say</h3>
-<pre><code>/research-ingest article https://www.bloomberg.com/news/articles/2025-09-11/epstein-emails --queue 7</code></pre>
-
-        <h3 class="subsection-heading">Strategy cascade</h3>
-        <table class="data-table">
-          <thead>
-            <tr><th>#</th><th>Strategy</th><th>Works for</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>1</td><td>Direct fetch + Trafilatura</td><td>Substack, NPR, ProPublica, open access</td></tr>
-            <tr><td>2</td><td>Jina AI Reader (<code>r.jina.ai</code>)</td><td>Soft/metered paywalls, most news sites</td></tr>
-            <tr><td>3</td><td>Wayback CDX check → fetch</td><td>Articles crawled by archive.org (use Bash curl — WebFetch blocks archive.org)</td></tr>
-            <tr><td>4</td><td>archive.ph / archive.today</td><td>Previously human-archived pages</td></tr>
-            <tr><td>5</td><td>Syndication hunt</td><td>Bloomberg → BritBrief/Yahoo; NYT → Yahoo/MSN</td></tr>
-            <tr><td>6</td><td>AMP / mobile versions</td><td>Sites serving lighter mobile pages</td></tr>
-            <tr><td>7</td><td>Secondary source reconstruction</td><td>Only with explicit user permission</td></tr>
-            <tr><td>8</td><td>Parallel agent research</td><td>Last resort — deep multi-source sweep</td></tr>
-          </tbody>
-        </table>
+<pre><code>ingest https://www.bloomberg.com/news/articles/2025-09-11/epstein-emails --queue 7</code></pre>
 
         <h3 class="subsection-heading">What lands in sources/</h3>
 <pre><code># Maxwell Sends Mystery USB to DOJ
@@ -150,10 +133,12 @@
 
 ---
 
-## Summary
+## Key Content
 
 Maxwell sent a USB drive via FedEx to U.S. Attorney Jay Clayton on April 16, 2026,
-days after a sealed filing referenced Melania Trump...
+days after a sealed filing referenced Melania Trump. The USB arrived at the U.S.
+Attorney's office in Manhattan without explanation. Clayton had been confirmed as
+U.S. Attorney for SDNY three days earlier...
 
 ## Key Facts for Sourcing
 
@@ -168,6 +153,7 @@ days after a sealed filing referenced Melania Trump...
 
         <h3 class="subsection-heading">The six agents</h3>
         <table class="data-table">
+          <colgroup><col style="width:20%"><col style="width:15%"><col style="width:65%"></colgroup>
           <thead>
             <tr><th>Agent</th><th>Model</th><th>Extracts</th></tr>
           </thead>
@@ -182,7 +168,7 @@ days after a sealed filing referenced Melania Trump...
         </table>
 
         <h3 class="subsection-heading">You say</h3>
-<pre><code>/research-ingest book books/brown-perversion-of-justice.md</code></pre>
+<pre><code>ingest books/brown-perversion-of-justice.md</code></pre>
 
         <h3 class="subsection-heading">What happens</h3>
 <pre><code><span class="comment"># Splits 340,000 chars into ~43 chunks</span>
@@ -315,28 +301,28 @@ days after a sealed filing referenced Melania Trump...
 <pre id="skill-text" class="skill-pre"><code>---
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, Task
 description: "Unified investigative research pipeline — articles, documents, books, media, multi-agent extraction, and theme tracking"
-argument-hint: "&lt;subsystem&gt; [args] — subsystems: article, doc, book, media, extract, theme, report"
+argument-hint: "&lt;url or file path&gt; — auto-detects source type"
 ---
 
 # research-ingest
 
 Unified investigative research ingestion skill (v1.2).
 
-## Subsystem dispatch
+## Auto-detection dispatch
 
-Parse `$ARGUMENTS`. First token = subsystem:
+Inspect the first token of `$ARGUMENTS`:
 
-| Subsystem | Trigger |
-|-----------|---------|
-| `article &lt;url&gt;` | Ingest web article via bypass cascade |
-| `doc &lt;path&gt;` | Ingest PDF / court document |
-| `book &lt;path&gt;` | Ingest EPUB/PDF book via multi-agent pipeline |
-| `media &lt;url&gt;` | Ingest YouTube / audio → diarized transcript |
-| `extract &lt;source&gt;` | Run multi-agent extraction on a saved source file |
-| `theme &lt;action&gt;` | Theme tracking: define / tag / suggest / report |
-| `report` | Project status + evidence summaries |
+| Input | Routes to |
+|-------|-----------|
+| URL containing `youtube.com` or `youtu.be` | `media` |
+| Any other URL (starts with `http`) | `article` |
+| Path ending in `.epub`, `.pdf`, or `.md` | `book` |
+| First token is `doc` | `doc` subsystem |
+| First token is `extract` | `extract` subsystem |
+| First token is `theme` | `theme` subsystem |
+| First token is `report` | `report` subsystem |
 
-If no subsystem matches, assume `article`.
+If no match, assume `article`.
 
 ---
 
@@ -384,7 +370,7 @@ Save to `03_Resources/{project}/sources/{publication}-{year}-{slug}.md`:
 
 ## Key Content
 
-{Full text or organized sections}
+{Full article text}
 
 ## Key Facts for Sourcing
 
@@ -506,7 +492,25 @@ sources_dir = "{vault_path}/sources"
 - **User-pasted content = full access.** If the article is in the conversation, use it.
 - **Save before analyzing.** Content not saved will evaporate between sessions.
 - **Check for existing source files** before creating new ones — don't duplicate.
-- **Always run validate.py** after bulk extraction. Zero errors = clean corpus.</code></pre>
+- **Always run validate.py** after bulk extraction. Zero errors = clean corpus.
+
+---
+
+## Examples
+
+```
+ingest https://bloomberg.com/... --pub Bloomberg --queue 7
+ingest https://substack.com/... --no-save
+ingest ~/Downloads/perversion-of-justice.epub --author "Julie K. Brown"
+ingest https://www.youtube.com/watch?v=abc123
+ingest https://www.youtube.com/@bekahdayyy/videos --channel --confidence MEDIUM
+doc court-filing.pdf
+extract sources/bloomberg-2025-epstein-emails.md --agents claims,scenes
+theme define "victim-network"
+theme suggest --source sources/bloomberg-2025-epstein-emails.md
+theme report financial-concealment
+report
+```</code></pre>
         </div>
       </section>
 
@@ -526,7 +530,7 @@ sources_dir = "{vault_path}/sources"
 
         <div class="faq-item">
           <h3 class="faq-q">Use extract on articles, not just books</h3>
-          <p><code>/research-ingest article</code> saves a source file and pulls key facts from the summary. <code>/research-ingest extract</code> runs the full 6-agent pipeline on that file. Run <code>extract</code> on high-value articles when you need deeper structured extraction — named entities, claimed relationships, precise datings.</p>
+          <p><code>ingest &lt;url&gt;</code> saves a source file and pulls key facts from the summary. <code>extract &lt;source&gt;</code> runs the full 6-agent pipeline on that file. Run <code>extract</code> on high-value articles when you need deeper structured extraction — named entities, claimed relationships, precise datings.</p>
         </div>
 
         <div class="faq-item">
@@ -561,7 +565,7 @@ sources_dir = "{vault_path}/sources"
 
         <div class="faq-item">
           <h3 class="faq-q">What's the relationship to the old /ingest skill?</h3>
-          <p><code>/research-ingest article</code> is the full article ingestion subsystem from the old <code>/ingest</code> skill — same cascade, same source file format. <code>/research-ingest book</code> and <code>extract</code> add the multi-agent pipeline. <code>/research-ingest theme</code> is new in v1.2. If you have an existing <code>/ingest</code> setup, the source files and facts database are fully compatible.</p>
+          <p><code>ingest &lt;url&gt;</code> is the full article ingestion subsystem from the old <code>/ingest</code> skill — same cascade, same source file format. Book and extract add the multi-agent pipeline. Theme tracking is new in v1.2. If you have an existing <code>/ingest</code> setup, the source files and facts database are fully compatible.</p>
         </div>
       </section>
 
