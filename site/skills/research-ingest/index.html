@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>research-ingest — lammer.app/skills</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fira+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/skills/style.css?v=2">
+  <meta property="og:title" content="research-ingest">
+  <meta property="og:description" content="Unified investigative research pipeline. Ingest articles, books, depositions, and media. Track themes across sources. Query in plain English.">
+  <meta property="og:image" content="https://lammer.app/og.png">
+  <meta property="og:url" content="https://lammer.app/skills/research-ingest">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://lammer.app/og.png">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <a href="/" class="site-logo">lammer<span class="logo-dot">.</span>app</a>
+      <span class="header-sep">/</span>
+      <a href="/skills" class="header-breadcrumb-link">skills</a>
+    </div>
+    <nav class="header-nav">
+    </nav>
+  </div>
+</header>
+
+<div class="page-wrap">
+  <div class="content-grid">
+
+    <!-- ── MAIN COLUMN ─────────────────────────────────────────────── -->
+    <main>
+
+      <nav class="breadcrumb">
+        <a href="/skills">skills</a>
+        <span>/</span>
+        <span class="breadcrumb-cur">research-ingest</span>
+      </nav>
+
+      <h1 class="skill-title">research-ingest</h1>
+      <p class="skill-subtitle">Unified investigative research pipeline. Ingest articles, books, depositions, and media. Track themes across sources. Query in plain English.</p>
+
+      <div class="install-block">
+        <div class="install-label">Install</div>
+        <div class="install-cmd">
+          <span class="install-prompt">$</span>
+          <code>cp research-ingest.md .claude/commands/</code>
+        </div>
+      </div>
+
+      <div style="margin-bottom:32px;">
+        <button class="copy-btn" data-label="Copy Skill" style="font-size:14px;padding:10px 20px;" onclick="copySkill(this)">Copy Skill</button>
+      </div>
+
+      <div class="summary-box">
+        <p class="summary-intro">A single Claude Code command that handles the full investigative research pipeline — from raw source acquisition through structured fact extraction, database accumulation, and theme tracking. Point it at any source and it builds a queryable facts database you can research against.</p>
+        <ul>
+          <li>Seven subsystems: <code>article</code>, <code>doc</code>, <code>book</code>, <code>media</code>, <code>extract</code>, <code>theme</code>, <code>report</code></li>
+          <li>Article ingestion with 8-strategy paywall bypass cascade</li>
+          <li>Multi-agent book extraction: Haiku×4 specialists + Sonnet×2 synthesizers per chunk</li>
+          <li>Theme tracking — investigative threads that accumulate evidence across sources</li>
+          <li>Project-agnostic: configure any investigation via <code>--project</code> flag</li>
+          <li>No external dependencies beyond the Python standard library</li>
+        </ul>
+      </div>
+
+      <!-- ── SUBSYSTEMS ─────────────────────────────────────────────── -->
+      <section class="prose-section">
+        <h2 class="section-heading">Subsystems</h2>
+        <p>All commands route through a single entry point:</p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>What it does</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>/research-ingest article &lt;url&gt;</code></td>
+              <td>Paywall bypass cascade → structured source file</td>
+            </tr>
+            <tr>
+              <td><code>/research-ingest doc &lt;path&gt;</code></td>
+              <td>PDF / court document ingestion</td>
+            </tr>
+            <tr>
+              <td><code>/research-ingest book &lt;path&gt;</code></td>
+              <td>EPUB/PDF → multi-agent extraction (Haiku×4 + Sonnet×2)</td>
+            </tr>
+            <tr>
+              <td><code>/research-ingest media &lt;url&gt;</code></td>
+              <td>YouTube / audio → diarized transcript + facts (transcript via <code>yt-dlp</code> or <code>youtube_transcript_api</code>)</td>
+            </tr>
+            <tr>
+              <td><code>/research-ingest extract &lt;source&gt;</code></td>
+              <td>Run multi-agent extraction on a saved source file</td>
+            </tr>
+            <tr>
+              <td><code>/research-ingest theme &lt;action&gt;</code></td>
+              <td>Define, tag, suggest, and report on investigative themes</td>
+            </tr>
+            <tr>
+              <td><code>/research-ingest report</code></td>
+              <td>Project status + per-theme evidence summaries</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ── ARTICLE EXAMPLE ─────────────────────────────────────────── -->
+      <section class="prose-section">
+        <h2 class="section-heading">Article ingestion</h2>
+        <p>The <code>article</code> subsystem tries eight access strategies in order, stops when it gets full text, and saves a structured source file with extracted facts.</p>
+
+        <h3 class="subsection-heading">You say</h3>
+<pre><code>/research-ingest article https://www.bloomberg.com/news/articles/2025-09-11/epstein-emails --queue 7</code></pre>
+
+        <h3 class="subsection-heading">Strategy cascade</h3>
+        <table class="data-table">
+          <thead>
+            <tr><th>#</th><th>Strategy</th><th>Works for</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Direct fetch + Trafilatura</td><td>Substack, NPR, ProPublica, open access</td></tr>
+            <tr><td>2</td><td>Jina AI Reader (<code>r.jina.ai</code>)</td><td>Soft/metered paywalls, most news sites</td></tr>
+            <tr><td>3</td><td>Wayback CDX check → fetch</td><td>Articles crawled by archive.org (use Bash curl — WebFetch blocks archive.org)</td></tr>
+            <tr><td>4</td><td>archive.ph / archive.today</td><td>Previously human-archived pages</td></tr>
+            <tr><td>5</td><td>Syndication hunt</td><td>Bloomberg → BritBrief/Yahoo; NYT → Yahoo/MSN</td></tr>
+            <tr><td>6</td><td>AMP / mobile versions</td><td>Sites serving lighter mobile pages</td></tr>
+            <tr><td>7</td><td>Secondary source reconstruction</td><td>Only with explicit user permission</td></tr>
+            <tr><td>8</td><td>Parallel agent research</td><td>Last resort — deep multi-source sweep</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="subsection-heading">What lands in sources/</h3>
+<pre><code># Maxwell Sends Mystery USB to DOJ
+
+**Source:** Daily Beast
+**Author:** Jose Pagliery
+**Date:** April 22, 2026
+**URL:** https://www.thedailybeast.com/...
+**Access:** DONE — via Jina AI Reader
+**Retrieved:** 2026-04-27
+
+---
+
+## Summary
+
+Maxwell sent a USB drive via FedEx to U.S. Attorney Jay Clayton on April 16, 2026,
+days after a sealed filing referenced Melania Trump...
+
+## Key Facts for Sourcing
+
+- **Maxwell sent USB drive to Jay Clayton via FedEx** — April 16, 2026
+- **Government deadline to respond to Maxwell petition** — June 5, 2026</code></pre>
+      </section>
+
+      <!-- ── BOOK EXTRACTION ─────────────────────────────────────────── -->
+      <section class="prose-section">
+        <h2 class="section-heading">Book extraction</h2>
+        <p>Large documents are processed in 8,000-character chunks. Six specialist agents run on each chunk in parallel — four Haiku agents for speed and a Sonnet agent for synthesis. Facts accumulate into <code>facts.jsonl</code> as chunks complete.</p>
+
+        <h3 class="subsection-heading">The six agents</h3>
+        <table class="data-table">
+          <thead>
+            <tr><th>Agent</th><th>Model</th><th>Extracts</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>People</td><td>Haiku</td><td>Names, roles, relationships, affiliations</td></tr>
+            <tr><td>Timeline</td><td>Haiku</td><td>Dated events, sequences, cause-and-effect</td></tr>
+            <tr><td>Locations</td><td>Haiku</td><td>Named places, addresses, geographic context</td></tr>
+            <tr><td>Bibliography</td><td>Haiku</td><td>Citations, sources, cross-references</td></tr>
+            <tr><td>Claims</td><td>Sonnet</td><td>Assertions with certainty scores + attribution</td></tr>
+            <tr><td>Scenes</td><td>Sonnet</td><td>Narrative moments: who, where, what was said</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="subsection-heading">You say</h3>
+<pre><code>/research-ingest book books/brown-perversion-of-justice.md</code></pre>
+
+        <h3 class="subsection-heading">What happens</h3>
+<pre><code><span class="comment"># Splits 340,000 chars into ~43 chunks</span>
+<span class="comment"># Launches 6 agents × 43 chunks = 258 parallel extractions</span>
+<span class="comment"># Agents run with Haiku (fast, cheap) or Sonnet (nuanced)</span>
+<span class="comment"># Each chunk returns structured JSON</span>
+
+→ Chunk 1/43: People (14 entities), Timeline (8 events), Claims (11 facts)...
+→ Chunk 2/43: ...
+→ Complete: 394 facts extracted · Total in store: 9,241</code></pre>
+      </section>
+
+      <!-- ── THEME TRACKING ──────────────────────────────────────────── -->
+      <section class="prose-section">
+        <h2 class="section-heading">Theme tracking</h2>
+        <p>Themes are investigative threads — cross-cutting patterns that accumulate evidence across sources. Distinct from tags (low-level descriptors). Each theme has keywords Claude uses to auto-suggest fact assignments as new sources are ingested.</p>
+
+        <h3 class="subsection-heading">Workflow</h3>
+        <table class="data-table">
+          <thead>
+            <tr><th>Command</th><th>What it does</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>theme define "financial-concealment"</code></td>
+              <td>Create a theme with description + keywords</td>
+            </tr>
+            <tr>
+              <td><code>theme tag F-0123 financial-concealment</code></td>
+              <td>Manually assign a fact to a theme</td>
+            </tr>
+            <tr>
+              <td><code>theme suggest</code></td>
+              <td>Auto-propose fact→theme mappings via keyword match + Haiku classification</td>
+            </tr>
+            <tr>
+              <td><code>theme report financial-concealment</code></td>
+              <td>Evidence summary: count, sources, date range, gaps</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subsection-heading">Theme schema (themes.jsonl)</h3>
+<pre><code>{
+  "id": "T-001",
+  "name": "financial-concealment",
+  "display_name": "Financial Concealment",
+  "description": "Methods used to hide assets: shell companies, offshore trusts, nominee accounts",
+  "keywords": ["offshore", "shell", "trust", "launder", "conceal", "nominee"],
+  "fact_ids": ["F-0123-0045", "F-0456-0012"],
+  "source_ids": ["SRC-BOOK-brown-poj"],
+  "fact_count": 127,
+  "source_count": 23,
+  "earliest_date": "1985",
+  "latest_date": "2019",
+  "status": "active"
+}</code></pre>
+
+        <h3 class="subsection-heading">Theme report output</h3>
+<pre><code>## Theme: Financial Concealment (T-001)
+
+127 facts across 23 sources | 1985–2019
+
+### Core claim
+[2–3 sentence synthesis from highest-certainty facts]
+
+### Evidence by period
+- 1985–1990: 12 facts (3 sources)
+- 1990–2000: 45 facts (8 sources)
+- 2000–2019: 70 facts (12 sources)
+
+### Strongest sources
+- Brown, Perversion of Justice (certainty 7) — 34 facts
+- DOJ-OGR-000234 (certainty 9) — 8 facts
+
+### Gaps
+- No sources cover offshore account origins pre-1985</code></pre>
+      </section>
+
+      <!-- ── DATABASE ───────────────────────────────────────────────── -->
+      <section class="prose-section">
+        <h2 class="section-heading">The database</h2>
+        <p>Three JSONL files grow as you ingest. Migrate to SQLite when you need cross-entity queries or timeline generation — the migration is safe to re-run at any point.</p>
+
+        <table class="data-table">
+          <thead>
+            <tr><th>File</th><th>Contains</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>facts/facts.jsonl</code></td>
+              <td>Every extracted fact — claim, date, certainty, source, entities, tags, themes</td>
+            </tr>
+            <tr>
+              <td><code>facts/sources.jsonl</code></td>
+              <td>Source registry — title, author, type, certainty tier, ingest date</td>
+            </tr>
+            <tr>
+              <td><code>facts/themes.jsonl</code></td>
+              <td>Investigative threads — keywords, fact IDs, source IDs, date range</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subsection-heading">Fact schema</h3>
+<pre><code>{
+  "id": "F-08910",
+  "claim": "Maxwell sent a USB drive via FedEx to U.S. Attorney Jay Clayton on April 16, 2026",
+  "date": "2026-04-16",
+  "certainty": 7,
+  "source_id": "ART-dailybeast-maxwell-usb-2026",
+  "people": ["Ghislaine Maxwell", "Jay Clayton"],
+  "places": ["New York"],
+  "orgs": ["DOJ", "SDNY"],
+  "tags": ["maxwell", "doj", "2026"],
+  "themes": ["T-003"]
+}</code></pre>
+      </section>
+
+      <!-- ── SKILL FILE ─────────────────────────────────────────────── -->
+      <section class="prose-section">
+        <h2 class="section-heading">The skill file</h2>
+        <p>Copy this into <code>.claude/commands/research-ingest.md</code>. Claude Code picks it up automatically and knows how to route all subsystem commands.</p>
+
+        <div class="skill-copy-block">
+          <div class="skill-copy-header">
+            <span class="skill-copy-filename">research-ingest.md</span>
+            <button class="copy-btn" data-label="Copy" onclick="copySkill(this)">Copy</button>
+          </div>
+<pre id="skill-text" class="skill-pre"><code>---
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, Task
+description: "Unified investigative research pipeline — articles, documents, books, media, multi-agent extraction, and theme tracking"
+argument-hint: "&lt;subsystem&gt; [args] — subsystems: article, doc, book, media, extract, theme, report"
+---
+
+# research-ingest
+
+Unified investigative research ingestion skill (v1.2).
+
+## Subsystem dispatch
+
+Parse `$ARGUMENTS`. First token = subsystem:
+
+| Subsystem | Trigger |
+|-----------|---------|
+| `article &lt;url&gt;` | Ingest web article via bypass cascade |
+| `doc &lt;path&gt;` | Ingest PDF / court document |
+| `book &lt;path&gt;` | Ingest EPUB/PDF book via multi-agent pipeline |
+| `media &lt;url&gt;` | Ingest YouTube / audio → diarized transcript |
+| `extract &lt;source&gt;` | Run multi-agent extraction on a saved source file |
+| `theme &lt;action&gt;` | Theme tracking: define / tag / suggest / report |
+| `report` | Project status + evidence summaries |
+
+If no subsystem matches, assume `article`.
+
+---
+
+## article — Paywall bypass cascade
+
+Flags: `--title`, `--pub`, `--author`, `--date`, `--queue N`, `--project DIR`, `--no-save`
+
+### CRITICAL: Ask first — never reconstruct silently
+
+If Strategy 1 fails and the user is in the conversation, STOP. Say:
+&gt; "I couldn't get the full text from [domain]. Do you have access? Can you paste it?"
+
+Only proceed to Strategy 2+ if user says go ahead. Fail loudly in first response line, never buried.
+
+### Strategy cascade (try in order, stop when you have full text)
+
+1. **Direct fetch + Trafilatura** — WebFetch original URL
+2. **Jina AI Reader** — `WebFetch: https://r.jina.ai/{URL}` — clean Markdown, works for soft paywalls
+3. **Wayback CDX check** — `http://web.archive.org/cdx/search/cdx?url={URL}&output=json&fl=timestamp,statuscode&filter=statuscode:200&limit=1` — if empty, skip; else fetch `https://web.archive.org/web/{TIMESTAMP}/{URL}`
+4. **archive.ph** — `https://archive.ph/newest/{URL}` — conditional, only if previously archived
+5. **Syndication hunt** — WebSearch: `"{title}" site:yahoo.com OR site:msn.com OR site:britbrief.co.uk`
+6. **AMP/mobile versions** — `https://amp.{domain}/{path}` or `https://{domain}/amp/{path}`
+7. **Secondary reconstruction** — only with explicit user permission
+8. **Parallel agent** — Task (Sonnet) deep research sweep
+
+### Source file format
+
+Save to `03_Resources/{project}/sources/{publication}-{year}-{slug}.md`:
+
+```
+# {Article Title}
+
+**Source:** {Publication}
+**Author:** {Author}
+**Date:** {Month Day, Year}
+**URL:** {url}
+**Access:** {DONE | PARTIAL | DEAD} — {notes}
+**Retrieved:** {today}
+
+---
+
+## Summary
+
+{2–3 sentence summary}
+
+## Key Content
+
+{Full text or organized sections}
+
+## Key Facts for Sourcing
+
+- **{Fact}** — {context}
+```
+
+---
+
+## book — Multi-agent extraction
+
+Splits the source into 8,000-character chunks. Launches 6 specialist agents per chunk in parallel.
+
+| Agent | Model | Extracts |
+|-------|-------|---------|
+| People | Haiku | Names, roles, relationships |
+| Timeline | Haiku | Dated events, sequences |
+| Locations | Haiku | Places, addresses, geography |
+| Bibliography | Haiku | Citations, cross-references |
+| Claims | Sonnet | Assertions + certainty scores |
+| Scenes | Sonnet | Narrative moments: who, where, what was said |
+
+Each agent returns structured JSON. Facts accumulate to `facts/facts.jsonl`. After all chunks complete, run `generate_views.py` and `validate.py`.
+
+---
+
+## extract — Run extraction on a saved source
+
+Point at any saved source file. Runs the same 6-agent pipeline as `book`. Use after ingesting articles or docs when you want deeper structured extraction beyond the initial key facts.
+
+```
+python3 scripts/extract_facts_from_source.py sources/filename.md
+python3 scripts/build_source_registry.py
+python3 scripts/generate_views.py
+python3 scripts/validate.py
+```
+
+---
+
+## theme — Investigative thread tracking
+
+Themes are cross-cutting patterns that accumulate evidence across sources. Distinct from `tags`.
+
+### Actions
+
+**`theme define &lt;name&gt;`**
+Create a theme. Ask for: display name, description, keywords (comma-separated). Write to `facts/themes.jsonl`.
+
+**`theme tag &lt;fact-id&gt; &lt;theme-id&gt;`**
+Manually assign a fact to a theme. Update both the fact in `facts.jsonl` (add theme_id to `themes[]`) and the theme entry (add fact_id to `fact_ids[]`).
+
+**`theme suggest`**
+Scan all facts in `facts.jsonl` against all theme keyword lists. For each potential match, use Haiku to classify (yes/no/uncertain). Present proposed mappings for user approval before writing.
+
+**`theme report &lt;theme-name&gt;`**
+Generate structured evidence summary:
+- Fact count + source count + date range
+- Core claim synthesis (from highest-certainty facts)
+- Evidence by time period
+- Strongest sources by fact count
+- Coverage gaps
+
+### Schema (facts/themes.jsonl)
+
+```json
+{
+  "id": "T-001",
+  "name": "financial-concealment",
+  "display_name": "Financial Concealment",
+  "description": "Methods used to hide assets: shell companies, offshore trusts, nominee accounts",
+  "keywords": ["offshore", "shell", "trust", "launder", "conceal", "nominee"],
+  "fact_ids": [],
+  "source_ids": [],
+  "fact_count": 0,
+  "source_count": 0,
+  "earliest_date": null,
+  "latest_date": null,
+  "created": "{today}",
+  "updated": "{today}",
+  "status": "active"
+}
+```
+
+Facts gain a `themes: [theme_id, ...]` field alongside existing `tags`.
+
+---
+
+## report — Project status
+
+Show:
+- Facts in `facts.jsonl` (total, by source type, last 7 days)
+- Sources in `sources.jsonl` (total, by type)
+- Themes in `themes.jsonl` (active, fact coverage)
+- Any validation errors
+
+---
+
+## Project config
+
+Default: uses paths configured in the project's `CLAUDE.md`.
+
+With `--project &lt;name&gt;`: reads `~/.research-ingest/&lt;name&gt;.toml`:
+```toml
+[project]
+name = "my-investigation"
+vault_path = "~/research/my-investigation"
+facts_path = "{vault_path}/facts/facts.jsonl"
+themes_path = "{vault_path}/facts/themes.jsonl"
+sources_path = "{vault_path}/facts/sources.jsonl"
+sources_dir = "{vault_path}/sources"
+```
+
+---
+
+## Rules
+
+- **Never fabricate content.** If you can't find a quote, don't make one up.
+- **Ask before reconstructing.** Strategy 1 failure = ask user, not proceed silently.
+- **Fail loudly.** Access failure goes in first response line, never buried.
+- **User-pasted content = full access.** If the article is in the conversation, use it.
+- **Save before analyzing.** Content not saved will evaporate between sessions.
+- **Check for existing source files** before creating new ones — don't duplicate.
+- **Always run validate.py** after bulk extraction. Zero errors = clean corpus.</code></pre>
+        </div>
+      </section>
+
+      <!-- ── TIPS ─────────────────────────────────────────────────── -->
+      <section class="prose-section">
+        <h2 class="section-heading">Tips</h2>
+
+        <div class="faq-item">
+          <h3 class="faq-q">Start with themes before you have all your sources</h3>
+          <p>Define your investigative themes early — even with just a few sources. As new material comes in, <code>theme suggest</code> auto-proposes mappings against the keyword lists. The theme database fills up gradually rather than requiring a big classification pass at the end.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-q">Ingest everything — let certainty sorting do its job</h3>
+          <p>Don't skip sources you don't fully trust. Flag them with their tier (<code>--certainty 3</code> for conspiracy-adjacent, <code>--certainty 9</code> for court docs). Facts land in the database tagged accordingly. When a trusted source later corroborates a low-certainty claim, the score rises. The database is the filter, not the front door.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-q">Use extract on articles, not just books</h3>
+          <p><code>/research-ingest article</code> saves a source file and pulls key facts from the summary. <code>/research-ingest extract</code> runs the full 6-agent pipeline on that file. Run <code>extract</code> on high-value articles when you need deeper structured extraction — named entities, claimed relationships, precise datings.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-q">For large sources, watch chunk progress</h3>
+          <p>Book extraction launches hundreds of parallel agents. Ask Claude to show chunk progress inline so you can see the extraction working in real time. If a chunk fails, it's safe to re-run — the extractor deduplicates on fact content before appending.</p>
+        </div>
+      </section>
+
+      <!-- ── FAQ ──────────────────────────────────────────────────── -->
+      <section class="prose-section">
+        <h2 class="section-heading">FAQ</h2>
+
+        <div class="faq-item">
+          <h3 class="faq-q">What's the difference between tags and themes?</h3>
+          <p>Tags are low-level descriptors — <code>palm-beach</code>, <code>2003</code>, <code>maxwell</code>. Themes are investigative threads — <code>financial-concealment</code>, <code>victim-network</code>, <code>institutional-complicity</code>. A theme accumulates evidence over time and produces reports. A tag is just a label.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-q">Extraction ran but I got 0 facts.</h3>
+          <p>Three causes: empty input (check <code>wc -l</code> on the file — conversion may have failed silently), score threshold too high (try <code>--threshold 3</code>), or page-marker artifacts from HTML EPUB extraction (strip <code>--- Page N ---</code> lines before running).</p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-q">How do I use this for a non-Epstein project?</h3>
+          <p>Create a config file at <code>~/.research-ingest/your-project.toml</code> with <code>vault_path</code>, <code>facts_path</code>, <code>themes_path</code>, and <code>sources_path</code>. Then pass <code>--project your-project</code> to any subsystem command. The skill defaults to whatever paths are set in the current project's <code>CLAUDE.md</code>.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-q">JSONL vs SQLite — when do I migrate?</h3>
+          <p>Stay in JSONL while actively ingesting. Migrate to SQLite when you need entity cross-queries, timeline generation, or theme bucketing across the full corpus. The SQLite database is fully rebuilt from JSONL — re-migrating is safe and normal.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-q">What's the relationship to the old /ingest skill?</h3>
+          <p><code>/research-ingest article</code> is the full article ingestion subsystem from the old <code>/ingest</code> skill — same cascade, same source file format. <code>/research-ingest book</code> and <code>extract</code> add the multi-agent pipeline. <code>/research-ingest theme</code> is new in v1.2. If you have an existing <code>/ingest</code> setup, the source files and facts database are fully compatible.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ── SIDEBAR ─────────────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-row">
+        <div class="sidebar-label">Repo</div>
+        <div class="sidebar-value">
+          <a href="https://github.com/luxwon/investigative-pipeline" target="_blank" class="sidebar-link">github.com/luxwon/investigative-pipeline</a>
+        </div>
+      </div>
+      <div class="sidebar-row">
+        <div class="sidebar-label">Version</div>
+        <div class="sidebar-value sidebar-dim">v1.2</div>
+      </div>
+      <div class="sidebar-row">
+        <div class="sidebar-label">Language</div>
+        <div class="sidebar-value">Python</div>
+      </div>
+      <div class="sidebar-row">
+        <div class="sidebar-label">Requires</div>
+        <div class="sidebar-value sidebar-dim">Python 3.11+</div>
+      </div>
+      <div class="sidebar-row">
+        <div class="sidebar-label">Dependencies</div>
+        <div class="sidebar-value sidebar-dim">None (stdlib only)</div>
+      </div>
+      <div class="sidebar-row">
+        <div class="sidebar-label">License</div>
+        <div class="sidebar-value sidebar-dim">MIT</div>
+      </div>
+      <div class="sidebar-row">
+        <div class="sidebar-label">Published</div>
+        <div class="sidebar-value sidebar-dim">Apr 2026</div>
+      </div>
+      <div class="sidebar-row">
+        <div class="sidebar-label">Input formats</div>
+        <div class="sidebar-value">
+          <div class="sidebar-tags">
+            <span class="tag">EPUB</span>
+            <span class="tag">PDF</span>
+            <span class="tag">Kindle</span>
+            <span class="tag">HTML</span>
+            <span class="tag">Audio</span>
+            <span class="tag">YouTube</span>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-row">
+        <div class="sidebar-label">Output formats</div>
+        <div class="sidebar-value">
+          <div class="sidebar-tags">
+            <span class="tag">JSONL</span>
+            <span class="tag">SQLite</span>
+            <span class="tag">Markdown</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /content-grid -->
+</div><!-- /page-wrap -->
+
+<script>
+function copySkill(btn) {
+  const pre = document.getElementById('skill-text');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    const originalText = btn.dataset.label || 'Copy Skill';
+    setTimeout(() => { btn.textContent = originalText; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>
