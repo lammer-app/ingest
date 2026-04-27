@@ -300,6 +300,7 @@ p code, li code, td code, h3 code {
 /* ── Tables ─────────────────────────────────────────────────────────── */
 
 .data-table {
+  table-layout: fixed;
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
@@ -331,7 +332,7 @@ p code, li code, td code, h3 code {
 }
 
 .data-table tbody tr:last-child td { border-bottom: none; }
-.data-table td:first-child { color: var(--text); white-space: nowrap; }
+.data-table td:first-child { color: var(--text); width: 42%; }
 
 /* ── FAQ ────────────────────────────────────────────────────────────── */
 
